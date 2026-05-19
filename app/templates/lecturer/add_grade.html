@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Add Grade - EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="eyebrow">Lecturer Workspace</div>
+  <h1>Record grades for your assigned courses.</h1>
+  <p>You can only enter results for students who match the department and level of the course assigned to you.</p>
+</div>
+
+<div class="form-card">
+  {% if courses %}
+  <form method="POST" action="{{ url_for('lecturer.add_grade') }}">
+    <div class="form-group">
+      <label>Course <span class="required">*</span></label>
+      <select name="course_id" id="course_id" required>
+        <option value="">Select assigned course</option>
+        {% for c in courses %}
+        <option value="{{ c.id }}" data-department="{{ c.department or '' }}" data-level="{{ c.level or '' }}">
+          {{ c.course_code }} - {{ c.title }}{% if c.department or c.level %} ({{ c.department or 'All Departments' }}{% if c.level %}, {{ c.level }} Level{% endif %}){% endif %}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Student <span class="required">*</span></label>
+      <select name="student_id" id="student_id" required>
+        <option value="">Select student</option>
+        {% for s in students %}
+        <option value="{{ s.id }}" data-department="{{ s.department or '' }}" data-level="{{ s.level or '' }}">
+          {{ s.user.name }} ({{ s.user.email }})
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label>Assignment (0-{{ max_assignment_score|int }}) <span class="required">*</span></label>
+        <input type="number" name="assignment_score" min="0" max="{{ max_assignment_score }}" step="0.1" placeholder="e.g. 8.0" required>
+      </div>
+
+      <div class="form-group">
+        <label>Attendance (0-{{ max_attendance_score|int }}) <span class="required">*</span></label>
+        <input type="number" name="attendance_score" min="0" max="{{ max_attendance_score }}" step="0.1" placeholder="e.g. 9.0" required>
+      </div>
+      <div class="form-group">
+        <label>Test (0-{{ max_test_score|int }}) <span class="required">*</span></label>
+        <input type="number" name="test_score" min="0" max="{{ max_test_score }}" step="0.1" placeholder="e.g. 15.0" required>
+      </div>
+
+      <div class="form-group">
+        <label>Exam (0-{{ max_exam_score|int }}) <span class="required">*</span></label>
+        <input type="number" name="exam_score" min="0" max="{{ max_exam_score }}" step="0.1" placeholder="e.g. 48.0" required>
+      </div>
+    </div>
+
+    <div class="risk-banner risk-low">
+      <strong>Grading structure</strong>
+      Assignment {{ max_assignment_score|int }}, Attendance {{ max_attendance_score|int }}, Test {{ max_test_score|int }}, Exam {{ max_exam_score|int }}.
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save Grade</button>
+      <a href="{{ url_for('lecturer.dashboard') }}" class="btn btn-outline">Back to Dashboard</a>
+    </div>
+  </form>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">EA</div>
+    <h3>No assigned courses yet</h3>
+    <p>An administrator needs to assign a course to your account before you can record grades.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  const courseSelect = document.getElementById('course_id');
+  const studentSelect = document.getElementById('student_id');
+  const originalStudentOptions = studentSelect ? Array.from(studentSelect.options).map((option) => ({
+    value: option.value,
+    text: option.text,
+    department: option.dataset.department || '',
+    level: option.dataset.level || '',
+  })) : [];
+
+  function filterStudentsForCourse() {
+    if (!courseSelect || !studentSelect) return;
+    const selectedCourse = courseSelect.options[courseSelect.selectedIndex];
+    const courseDepartment = selectedCourse ? (selectedCourse.dataset.department || '') : '';
+    const courseLevel = selectedCourse ? (selectedCourse.dataset.level || '') : '';
+
+    studentSelect.innerHTML = '<option value="">Select student</option>';
+    originalStudentOptions.forEach((option) => {
+      if (!option.value) return;
+      const matchesDepartment = !courseDepartment || option.department === courseDepartment;
+      const matchesLevel = !courseLevel || option.level === courseLevel;
+      if (matchesDepartment && matchesLevel) {
+        const el = document.createElement('option');
+        el.value = option.value;
+        el.textContent = option.text;
+        studentSelect.appendChild(el);
+      }
+    });
+  }
+
+  if (courseSelect) {
+    courseSelect.addEventListener('change', filterStudentsForCourse);
+    filterStudentsForCourse();
+  }
+</script>
+{% endblock %}

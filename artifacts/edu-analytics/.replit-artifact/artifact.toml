@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Educational Analytics System"
+version = "1.0.0"
+id = "artifacts/edu-analytics"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 22318
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/edu-analytics run dev"
+
+[services.env]
+PORT = "22318"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/edu-analytics", "run", "build"]
+publicDir = "artifacts/edu-analytics/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

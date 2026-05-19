@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}EduAnalytics{% endblock %}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+</head>
+<body>
+<div class="site-bg" aria-hidden="true">
+  <div class="bg-orb bg-orb-one"></div>
+  <div class="bg-orb bg-orb-two"></div>
+  <div class="bg-grid"></div>
+</div>
+{% if current_user.is_authenticated %}
+{% macro nav_icon(name) -%}
+  {% if name == 'dashboard' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13.2c0-.72.39-1.38 1.01-1.73l6.5-3.69a3 3 0 0 1 2.98 0l6.5 3.69c.62.35 1.01 1.01 1.01 1.73V19a2 2 0 0 1-2 2h-3.5v-4.25a1.75 1.75 0 0 0-3.5 0V21H5a2 2 0 0 1-2-2z"/></svg>
+  {% elif name == 'course' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 0 17.5 16H4zm0 12h13.5c.92 0 1.76.3 2.44.8A2.5 2.5 0 0 1 17.5 21H6.5A2.5 2.5 0 0 1 4 18.5z"/><path d="M7.5 7h8v1.75h-8zm0 3.75h6.5v1.75H7.5z"/></svg>
+  {% elif name == 'grade' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.7 4.3 5 5-9.86 9.86-5.18 1.04 1.04-5.18z"/><path d="M13.46 5.54 18.46 10.54"/></svg>
+  {% elif name == 'users' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.5 11.25a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5M7.5 12.75a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/><path d="M2.75 19.25a4.75 4.75 0 0 1 9.5 0v1h-9.5zm9.75 1v-1a5.84 5.84 0 0 1 2.1-4.5h1.9a4.75 4.75 0 0 1 4.75 4.75v.75z"/></svg>
+  {% elif name == 'password' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.5 10V8a4.5 4.5 0 1 1 9 0v2"/><path d="M6 10.5h12A1.5 1.5 0 0 1 19.5 12v7.5A1.5 1.5 0 0 1 18 21H6A1.5 1.5 0 0 1 4.5 19.5V12A1.5 1.5 0 0 1 6 10.5"/><path d="M12 14.25v3"/></svg>
+  {% elif name == 'profile' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.25 4.25 0 1 0 0-8.5 4.25 4.25 0 0 0 0 8.5"/><path d="M4.5 20.25a7.5 7.5 0 0 1 15 0"/></svg>
+  {% elif name == 'chat' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5h14A2.5 2.5 0 0 1 21.5 8v7A2.5 2.5 0 0 1 19 17.5H11l-4.5 3v-3H5A2.5 2.5 0 0 1 2.5 15V8A2.5 2.5 0 0 1 5 5.5"/><path d="M8 10h8M8 13h5"/></svg>
+  {% elif name == 'logout' -%}
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 7.5V5.75A2.75 2.75 0 0 0 11.25 3h-4.5A2.75 2.75 0 0 0 4 5.75v12.5A2.75 2.75 0 0 0 6.75 21h4.5A2.75 2.75 0 0 0 14 18.25V16.5"/><path d="M10.5 12h9"/><path d="m16.5 8 3.5 4-3.5 4"/></svg>
+  {% endif -%}
+{%- endmacro %}
+<div class="nav-shell">
+<nav class="navbar">
+  <div class="nav-topbar">
+    <a href="{% if current_user.role == 'admin' %}{{ url_for('admin.dashboard') }}{% elif current_user.role == 'lecturer' %}{{ url_for('lecturer.dashboard') }}{% else %}{{ url_for('student.dashboard') }}{% endif %}" class="nav-brand">
+      <span class="nav-brand-mark">EA</span>
+      <span class="nav-brand-copy">
+        <strong>EduAnalytics</strong>
+        <small>Academic insights hub</small>
+      </span>
+    </a>
+
+    <button
+      type="button"
+      class="nav-toggle"
+      aria-label="Toggle navigation"
+      aria-expanded="false"
+      aria-controls="site-navigation"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
+
+  <div class="nav-links" id="site-navigation">
+    <div class="nav-primary">
+      {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="nav-link {% if request.endpoint and request.endpoint == 'admin.dashboard' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('dashboard') }}</span><span>Dashboard</span></a>
+        <a href="{{ url_for('admin.add_course') }}" class="nav-link {% if request.endpoint and request.endpoint == 'admin.add_course' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('course') }}</span><span>Add Course</span></a>
+        <a href="{{ url_for('admin.manage_users') }}" class="nav-link {% if request.endpoint and request.endpoint == 'admin.manage_users' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('users') }}</span><span>Users</span></a>
+        <a href="{{ url_for('admin.change_password') }}" class="nav-link {% if request.endpoint and request.endpoint == 'admin.change_password' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('password') }}</span><span>Change Password</span></a>
+      {% elif current_user.role == 'lecturer' %}
+        <a href="{{ url_for('lecturer.dashboard') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('lecturer') %}active{% endif %}"><span class="nav-icon">{{ nav_icon('dashboard') }}</span><span>Dashboard</span></a>
+        <a href="{{ url_for('lecturer.add_grade') }}" class="nav-link {% if request.endpoint and request.endpoint == 'lecturer.add_grade' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('grade') }}</span><span>Add Grade</span></a>
+      {% else %}
+        <a href="{{ url_for('student.dashboard') }}" class="nav-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('dashboard') }}</span><span>Dashboard</span></a>
+        <a href="{{ url_for('student.profile') }}" class="nav-link {% if request.endpoint == 'student.profile' %}active{% endif %}"><span class="nav-icon">{{ nav_icon('profile') }}</span><span>My Profile</span></a>
+      {% endif %}
+      <a href="{{ url_for('chat.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('chat') %}active{% endif %}"><span class="nav-icon">{{ nav_icon('chat') }}</span><span>Chat</span></a>
+    </div>
+
+    <div class="nav-meta">
+      <div class="nav-period">
+        <span class="nav-user-label">Active</span>
+        <strong>{{ active_period.session_name }}</strong>
+        <span class="nav-user-role">{{ active_period.semester_name }} Semester</span>
+      </div>
+      <div class="nav-user">
+        <span class="nav-user-label">Signed in as</span>
+        <strong>{{ current_user.name or current_user.email }}</strong>
+        <span class="nav-user-role">{{ current_user.role }}</span>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="nav-link logout"><span class="nav-icon">{{ nav_icon('logout') }}</span><span>Logout</span></a>
+    </div>
+  </div>
+</nav>
+<div class="nav-backdrop" hidden></div>
+</div>
+{% endif %}
+
+<main class="page-shell">
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-messages">
+        {% for cat, msg in messages %}
+          <div class="alert alert-{{ cat }} reveal-on-scroll">{{ msg }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+</main>
+
+<footer class="footer">
+  <p>&copy; 2026 Educational Data Analytics System built with Python and Flask</p>
+</footer>
+
+{% if current_user.is_authenticated %}
+<script>
+  const navShell = document.querySelector('.nav-shell');
+  const nav = document.querySelector('.navbar');
+  const navToggle = document.querySelector('.nav-toggle');
+  const navLinks = document.querySelector('.nav-links');
+  const navItems = document.querySelectorAll('.nav-link');
+  const navBackdrop = document.querySelector('.nav-backdrop');
+
+  function setNavState(isOpen) {
+    if (!nav || !navToggle) return;
+    nav.classList.toggle('is-open', isOpen);
+    if (navShell) {
+      navShell.classList.toggle('is-open', isOpen);
+    }
+    navToggle.setAttribute('aria-expanded', String(isOpen));
+    document.body.classList.toggle('nav-open', isOpen && window.innerWidth <= 860);
+    if (navBackdrop) {
+      navBackdrop.hidden = !(isOpen && window.innerWidth <= 860);
+    }
+  }
+
+  if (nav && navToggle) {
+    navToggle.addEventListener('click', () => {
+      setNavState(!nav.classList.contains('is-open'));
+    });
+
+    navItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        if (window.innerWidth <= 860) {
+          setNavState(false);
+        }
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        setNavState(false);
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!nav.contains(event.target) && nav.classList.contains('is-open') && window.innerWidth <= 860) {
+        setNavState(false);
+      }
+    });
+
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', () => {
+        setNavState(false);
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 860) {
+        setNavState(false);
+      } else if (navLinks && !nav.classList.contains('is-open')) {
+        document.body.classList.remove('nav-open');
+      }
+    });
+  }
+</script>
+{% endif %}
+<script>
+  const revealItems = document.querySelectorAll('.page-header, .hero-header, .card, .stat-card, .auth-card, .auth-panel, .chat-rooms, .chat-main, .reveal-on-scroll');
+
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    revealItems.forEach((item, index) => {
+      item.style.setProperty('--reveal-delay', `${Math.min(index * 45, 240)}ms`);
+      observer.observe(item);
+    });
+  } else {
+    revealItems.forEach((item) => item.classList.add('is-visible'));
+  }
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

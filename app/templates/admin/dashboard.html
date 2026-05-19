@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="eyebrow">Admin Workspace</div>
+  <h1>Run the academic system from one clearer control center.</h1>
+  <p>Track institution-wide activity, manage courses, and keep user administration moving.</p>
+  <div class="period-chip">
+    <strong>Active Session:</strong> {{ active_period.session_name }}
+    <span>|</span>
+    <strong>Semester:</strong> {{ active_period.semester_name }}
+  </div>
+  <div class="hero-actions">
+    <a href="{{ url_for('admin.add_course') }}" class="btn btn-primary">Add Course</a>
+    <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline">Manage Users</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-row">
+    <h2>Academic Period</h2>
+  </div>
+  <form method="POST" action="{{ url_for('admin.update_academic_period') }}">
+    <div class="two-col">
+      <div class="form-group">
+        <label>Active Session</label>
+        <input type="text" name="session_name" value="{{ active_period.session_name }}" placeholder="e.g. 2025/2026" required>
+      </div>
+      <div class="form-group">
+        <label>Active Semester</label>
+        <select name="semester_name" required>
+          <option value="First" {% if active_period.semester_name == 'First' %}selected{% endif %}>First Semester</option>
+          <option value="Second" {% if active_period.semester_name == 'Second' %}selected{% endif %}>Second Semester</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Update Academic Period</button>
+    </div>
+  </form>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8"/>
+        <path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>
+      </svg>
+    </div>
+    <div class="stat-label">Total Students</div>
+    <div class="stat-value">{{ total_students }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M5 6.5h14v11H5z"/>
+        <path d="M8 4.5v4M16 4.5v4M8.5 17.5h7"/>
+      </svg>
+    </div>
+    <div class="stat-label">Total Lecturers</div>
+    <div class="stat-value">{{ total_lecturers }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h12.5v14.5A2.5 2.5 0 0 0 17 15H4.5z"/>
+        <path d="M4.5 17h12.5A2.5 2.5 0 0 1 19.5 19.5V21H7A2.5 2.5 0 0 1 4.5 18.5z"/>
+      </svg>
+    </div>
+    <div class="stat-label">Total Courses</div>
+    <div class="stat-value">{{ courses|length }}</div>
+  </div>
+  <div class="stat-card risk-high">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 3.5 21 19H3z"/>
+        <path d="M12 9v4.5M12 17h.01"/>
+      </svg>
+    </div>
+    <div class="stat-label">At-Risk Students</div>
+    <div class="stat-value">{{ at_risk_count }}</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header-row">
+      <h2>Courses</h2>
+      <a href="{{ url_for('admin.add_course') }}" class="btn btn-primary btn-sm">Add Course</a>
+    </div>
+    {% if courses %}
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr><th>Code</th><th>Title</th><th>Department</th><th>Lecturer</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for c in courses %}
+          <tr>
+            <td><strong>{{ c.course_code }}</strong></td>
+            <td>{{ c.title }}</td>
+            <td>{{ c.department or '-' }}</td>
+            <td>{{ c.lecturer.name if c.lecturer else '-' }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('admin.delete_course', course_id=c.id) }}" onsubmit="return confirm('Delete course {{ c.course_code }}?');">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted">No courses yet. <a href="{{ url_for('admin.add_course') }}">Add one</a>.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h2>Users</h2>
+      <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline btn-sm">Manage All</a>
+    </div>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead>
+        <tbody>
+          {% for u in users[:10] %}
+          <tr>
+            <td>{{ u.name or '-' }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="badge badge-{{ u.role }}">{{ u.role }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if users|length > 10 %}
+    <p class="text-muted small">Showing 10 of {{ users|length }}. <a href="{{ url_for('admin.manage_users') }}">View all</a>.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header-row">
+    <h2>Quick Actions</h2>
+  </div>
+  <div class="quick-actions">
+    <a href="{{ url_for('admin.add_course') }}" class="action-btn">
+      <span class="action-icon">Add</span>
+      <span>Add Course</span>
+    </a>
+    <a href="{{ url_for('admin.manage_users') }}" class="action-btn">
+      <span class="action-icon">Users</span>
+      <span>Manage Users</span>
+    </a>
+    <a href="{{ url_for('admin.change_password') }}" class="action-btn">
+      <span class="action-icon">Auth</span>
+      <span>Change Password</span>
+    </a>
+    <a href="{{ url_for('chat.index') }}" class="action-btn">
+      <span class="action-icon">Chat</span>
+      <span>Open Chat</span>
+    </a>
+  </div>
+</div>
+{% endblock %}

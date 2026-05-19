@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Chat - EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="eyebrow">Messaging</div>
+  <h1>Stay in sync with your academic community.</h1>
+  <p>Use shared rooms to coordinate coursework, study groups, and announcements.</p>
+</div>
+
+<div class="chat-layout">
+  <div class="chat-rooms">
+    <h3>Rooms</h3>
+    <ul class="room-list">
+      <li class="room-item active" data-room="general" onclick="switchRoom('general', this)">
+        # general
+      </li>
+      <li class="room-item" data-room="study-group" onclick="switchRoom('study-group', this)">
+        # study-group
+      </li>
+      <li class="room-item" data-room="announcements" onclick="switchRoom('announcements', this)">
+        # announcements
+      </li>
+    </ul>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-header">
+      <span id="room-name"># general</span>
+    </div>
+    <div id="chat-messages" class="chat-messages">
+      <div class="loading">Loading messages...</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="msg-input" class="chat-input" placeholder="Type a message..." autocomplete="off">
+      <button class="btn btn-primary" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentRoom = 'general';
+let lastCount = 0;
+
+function switchRoom(room, el) {
+  currentRoom = room;
+  document.querySelectorAll('.room-item').forEach(r => r.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('room-name').textContent = '# ' + room;
+  lastCount = 0;
+  loadMessages();
+}
+
+async function loadMessages() {
+  const res = await fetch('/chat/messages?room=' + currentRoom);
+  const msgs = await res.json();
+  if (msgs.length !== lastCount) {
+    lastCount = msgs.length;
+    const box = document.getElementById('chat-messages');
+    box.innerHTML = msgs.length === 0
+      ? '<div class="empty-chat">No messages yet. Say hello.</div>'
+      : msgs.map(m => `
+        <div class="msg ${m.is_me ? 'msg-me' : 'msg-other'}">
+          <span class="msg-sender">${m.is_me ? 'You' : escHtml(m.sender)}</span>
+          <div class="msg-bubble">${escHtml(m.content)}</div>
+          <span class="msg-time">${m.timestamp}</span>
+        </div>`).join('');
+    box.scrollTop = box.scrollHeight;
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function sendMessage() {
+  const input = document.getElementById('msg-input');
+  const content = input.value.trim();
+  if (!content) return;
+  input.value = '';
+  await fetch('/chat/send', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({content, room: currentRoom})
+  });
+  loadMessages();
+}
+
+document.getElementById('msg-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
+
+loadMessages();
+setInterval(loadMessages, 3000);
+</script>
+{% endblock %}

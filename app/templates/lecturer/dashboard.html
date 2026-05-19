@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}Lecturer Dashboard - EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="eyebrow">Lecturer Workspace</div>
+  <h1>Manage course performance with less friction.</h1>
+  <p>Welcome, <strong>{{ current_user.name }}</strong>. Review your courses, monitor student performance, and manage any level cohorts assigned to you as course advisor.</p>
+  <div class="period-chip">
+    <strong>Session:</strong> {{ active_period.session_name }}
+    <span>|</span>
+    <strong>Semester:</strong> {{ active_period.semester_name }}
+  </div>
+  <div class="hero-actions">
+    <a href="{{ url_for('lecturer.add_grade') }}" class="btn btn-primary">Add Grade</a>
+  </div>
+</div>
+
+{% if advised_students %}
+<div class="card">
+  <div class="card-header-row">
+    <h2>Course Advisor Cohorts</h2>
+  </div>
+  <div class="two-col">
+    {% for group in advised_students %}
+    <div class="card">
+      <div class="course-header">
+        <div>
+          <h2>{{ group.assignment.department }} - {{ group.assignment.level }} Level</h2>
+          <p class="text-muted">{{ group.total }} student(s) assigned to you as course advisor.</p>
+        </div>
+      </div>
+      {% if group.students %}
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr><th>Name</th><th>Matric No</th><th>Phone</th></tr>
+          </thead>
+          <tbody>
+            {% for student in group.students %}
+            <tr>
+              <td>{{ student.user.name or '-' }}</td>
+              <td>{{ student.matric_no or 'Pending' }}</td>
+              <td>{{ student.phone or '-' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted">No students currently match this advisor assignment.</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if not course_stats %}
+<div class="card empty-state">
+  <div class="empty-icon">EA</div>
+  <h3>No courses assigned yet</h3>
+  <p>Ask an administrator to assign courses to your account.</p>
+</div>
+{% endif %}
+
+{% for cs in course_stats %}
+<div class="card">
+  <div class="course-header">
+    <div>
+      <h2>{{ cs.course.course_code }} - {{ cs.course.title }}</h2>
+      <p class="text-muted">
+        {{ cs.course.department or 'General' }}
+        {% if cs.course.level %} | {{ cs.course.level }} Level{% endif %}
+      </p>
+    </div>
+    <div class="course-kpis">
+      <div class="kpi"><span class="kpi-val">{{ cs.total }}</span><span class="kpi-label">Students</span></div>
+      <div class="kpi"><span class="kpi-val">{{ cs.avg_score }}%</span><span class="kpi-label">Avg Score</span></div>
+      <div class="kpi"><span class="kpi-val">{{ cs.avg_attendance }}%</span><span class="kpi-label">Avg Attendance</span></div>
+      <div class="kpi at-risk"><span class="kpi-val">{{ cs.at_risk|length }}</span><span class="kpi-label">At-Risk</span></div>
+    </div>
+  </div>
+
+  {% if cs.at_risk %}
+  <div class="alert alert-danger at-risk-banner">
+    <strong>{{ cs.at_risk|length }} student(s) are currently at high risk</strong> in this course.
+  </div>
+  {% endif %}
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr><th>Student</th><th>Score</th><th>Attendance</th><th>Risk</th></tr>
+      </thead>
+      <tbody>
+        {% for s in cs.students %}
+        <tr class="{% if s.risk_level == 'HIGH' %}row-danger{% elif s.risk_level == 'MEDIUM' %}row-warning{% endif %}">
+          <td>{{ s.name }}</td>
+          <td>{{ "%.1f"|format(s.score) }}%</td>
+          <td>{{ "%.1f"|format(s.attendance) }}%</td>
+          <td><span class="badge badge-{{ s.risk_level|lower }}">{{ s.risk_level }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}

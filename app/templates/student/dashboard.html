@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard - EduAnalytics{% endblock %}
+{% block content %}
+<div class="hero-header">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <div class="eyebrow">Student Workspace</div>
+      <h1>Stay ahead of your academic trajectory.</h1>
+      <p>Welcome back, <strong>{{ current_user.name }}</strong>. Review your latest scores, attendance, and risk indicators in one clearer dashboard.</p>
+      <div class="period-chip">
+        <strong>Session:</strong> {{ active_period.session_name }}
+        <span>|</span>
+        <strong>Semester:</strong> {{ active_period.semester_name }}
+      </div>
+      <div class="hero-actions">
+        <a href="{{ url_for('student.profile') }}" class="btn btn-primary">Update Profile</a>
+        <a href="{{ url_for('chat.index') }}" class="btn btn-outline">Open Chat</a>
+      </div>
+    </div>
+    <div class="hero-metrics">
+      <div class="hero-metric">
+        <div class="hero-metric-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h12.5v14.5A2.5 2.5 0 0 0 17 15H4.5z"/>
+            <path d="M4.5 17h12.5A2.5 2.5 0 0 1 19.5 19.5V21H7A2.5 2.5 0 0 1 4.5 18.5z"/>
+          </svg>
+        </div>
+        <div class="label">Courses</div>
+        <div class="value">{{ registered_courses|length }}</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3.5 21 19H3z"/>
+            <path d="M12 9v4.5M12 17h.01"/>
+          </svg>
+        </div>
+        <div class="label">Overall Risk</div>
+        <div class="value">{{ overall_risk }}</div>
+      </div>
+      <div class="hero-metric">
+        <div class="hero-metric-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 5.5h14A2.5 2.5 0 0 1 21.5 8v7A2.5 2.5 0 0 1 19 17.5H11l-4.5 3v-3H5A2.5 2.5 0 0 1 2.5 15V8A2.5 2.5 0 0 1 5 5.5"/>
+            <path d="M8 10h8M8 13h5"/>
+          </svg>
+        </div>
+        <div class="label">Recommendations</div>
+        <div class="value">{{ recommendations|length }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h12.5v14.5A2.5 2.5 0 0 0 17 15H4.5z"/>
+        <path d="M4.5 17h12.5A2.5 2.5 0 0 1 19.5 19.5V21H7A2.5 2.5 0 0 1 4.5 18.5z"/>
+      </svg>
+    </div>
+    <div class="stat-label">Courses Enrolled</div>
+    <div class="stat-value">{{ registered_courses|length }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M5 18.5h14"/>
+        <path d="M7.5 16V10.5"/>
+        <path d="M12 16V6.5"/>
+        <path d="M16.5 16V12.5"/>
+      </svg>
+    </div>
+    <div class="stat-label">Average Score</div>
+    <div class="stat-value">
+      {% if course_data %}{{ "%.1f"|format(course_data|map(attribute='score')|list|sum / course_data|length) }}%{% else %}N/A{% endif %}
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 4.5a7.5 7.5 0 1 1-7.5 7.5"/>
+        <path d="M12 8.5v4l2.5 1.5"/>
+      </svg>
+    </div>
+    <div class="stat-label">Avg Attendance</div>
+    <div class="stat-value">
+      {% if course_data %}{{ "%.1f"|format(course_data|map(attribute='attendance')|list|sum / course_data|length) }}%{% else %}N/A{% endif %}
+    </div>
+  </div>
+  <div class="stat-card risk-{{ overall_risk|lower }}">
+    <div class="stat-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 3.5 21 19H3z"/>
+        <path d="M12 9v4.5M12 17h.01"/>
+      </svg>
+    </div>
+    <div class="stat-label">Overall Risk</div>
+    <div class="stat-value">{{ overall_risk }}</div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="card-header-row">
+      <h2>My Registered Courses</h2>
+    </div>
+    {% if registered_courses %}
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr><th>Course Code</th><th>Title</th><th>Department</th><th>Level</th><th>Action</th></tr>
+        </thead>
+        <tbody>
+          {% for registration in registered_courses %}
+          <tr>
+            <td><strong>{{ registration.course.course_code }}</strong></td>
+            <td>{{ registration.course.title }}</td>
+            <td>{{ registration.course.department or '-' }}</td>
+            <td>{{ registration.course.level or '-' }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('student.drop_course', course_id=registration.course.id) }}" onsubmit="return confirm('Drop {{ registration.course.course_code }}?');">
+                <button type="submit" class="btn btn-danger btn-sm">Drop</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted">You have not registered any courses yet.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <h2>Register New Course</h2>
+    </div>
+    {% if available_courses %}
+    <form method="POST" action="{{ url_for('student.register_course') }}">
+      <div class="form-group">
+        <label>Available Courses</label>
+        <select name="course_id" required>
+          <option value="">Select course</option>
+          {% for course in available_courses %}
+            {% if course.id not in registered_course_ids %}
+            <option value="{{ course.id }}">
+              {{ course.course_code }} - {{ course.title }}{% if course.level %} ({{ course.level }} Level){% endif %}
+            </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="btn-row">
+        <button type="submit" class="btn btn-primary">Register Course</button>
+      </div>
+    </form>
+    <p class="text-muted small">Only courses matching your department and level are shown.</p>
+    {% else %}
+    <p class="text-muted">No courses are available for your current department and level.</p>
+    {% endif %}
+  </div>
+</div>
+
+{% if course_data %}
+<div class="card">
+  <h2>Course Performance</h2>
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Course Code</th>
+          <th>Course Title</th>
+          <th>Score</th>
+          <th>Attendance</th>
+          <th>Risk Level</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in course_data %}
+        <tr>
+          <td><strong>{{ c.course_code }}</strong></td>
+          <td>{{ c.course_title }}</td>
+          <td>
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar score-bar" style="width:{{ c.score }}%"></div>
+              <span>{{ "%.1f"|format(c.score) }}%</span>
+            </div>
+          </td>
+          <td>
+            <div class="progress-bar-wrapper">
+              <div class="progress-bar att-bar" style="width:{{ c.attendance }}%"></div>
+              <span>{{ "%.1f"|format(c.attendance) }}%</span>
+            </div>
+          </td>
+          <td><span class="badge badge-{{ c.risk_level|lower }}">{{ c.risk_level }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card empty-state">
+  <div class="empty-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24">
+      <path d="M4.5 5.5A2.5 2.5 0 0 1 7 3h12.5v14.5A2.5 2.5 0 0 0 17 15H4.5z"/>
+      <path d="M4.5 17h12.5A2.5 2.5 0 0 1 19.5 19.5V21H7A2.5 2.5 0 0 1 4.5 18.5z"/>
+      <path d="M8 8.5h7M8 12h5"/>
+    </svg>
+  </div>
+  <h3>No grades recorded yet</h3>
+  <p>Your grades and attendance will appear here after you register courses and your lecturer records your results.</p>
+</div>
+{% endif %}
+
+<div class="card recommendation-card">
+  <h2>Personalized Recommendations</h2>
+  <div class="risk-banner risk-{{ overall_risk|lower }}">
+    <strong>Your current risk level is {{ overall_risk }}</strong>
+    {% if overall_risk == 'HIGH' %}
+      - Immediate action is recommended.
+    {% elif overall_risk == 'MEDIUM' %}
+      - Some areas need closer attention.
+    {% else %}
+      - Keep up the strong momentum.
+    {% endif %}
+  </div>
+  <ul class="rec-list">
+    {% for rec in recommendations %}
+    <li>{{ rec }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

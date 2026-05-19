@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Add Grade – EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <h1>📝 Add / Update Grade</h1>
+</div>
+<div class="form-card">
+  <form method="POST" action="{{ url_for('admin.add_grade') }}">
+    <div class="form-group">
+      <label>Student <span class="required">*</span></label>
+      <select name="student_id" required>
+        <option value="">— Select Student —</option>
+        {% for s in students %}
+        <option value="{{ s.id }}">{{ s.user.name }} ({{ s.user.email }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Course <span class="required">*</span></label>
+      <select name="course_id" required>
+        <option value="">— Select Course —</option>
+        {% for c in courses %}
+        <option value="{{ c.id }}">{{ c.course_code }} – {{ c.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Score (0–100) <span class="required">*</span></label>
+      <input type="number" name="score" min="0" max="100" step="0.1" placeholder="e.g. 75.5" required>
+    </div>
+    <div class="form-group">
+      <label>Attendance % (0–100) <span class="required">*</span></label>
+      <input type="number" name="attendance" min="0" max="100" step="0.1" placeholder="e.g. 90.0" required>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Save Grade</button>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

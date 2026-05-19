@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Add Course - EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="eyebrow">Admin Workspace</div>
+  <h1>Add New Course</h1>
+  <p>Create a course, attach it to a department and level, and assign the lecturer who will enter results for it.</p>
+</div>
+<div class="form-card">
+  <form method="POST" action="{{ url_for('admin.add_course') }}">
+    <div class="form-group">
+      <label>Course Code <span class="required">*</span></label>
+      <input type="text" name="course_code" placeholder="e.g. CSC201" required>
+    </div>
+    <div class="form-group">
+      <label>Course Title <span class="required">*</span></label>
+      <input type="text" name="title" placeholder="e.g. Introduction to Programming" required>
+    </div>
+    <div class="form-group">
+      <label>Department</label>
+      <input type="text" name="department" placeholder="e.g. Computer Science">
+    </div>
+    <div class="form-group">
+      <label>Level</label>
+      <select name="level">
+        <option value="">Select level</option>
+        <option value="100">100 Level</option>
+        <option value="200">200 Level</option>
+        <option value="300">300 Level</option>
+        <option value="400">400 Level</option>
+        <option value="500">500 Level</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Assign Lecturer</label>
+      <select name="lecturer_id">
+        <option value="">None</option>
+        {% for l in lecturers %}
+        <option value="{{ l.id }}">{{ l.name }} ({{ l.email }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="btn-row">
+      <button type="submit" class="btn btn-primary">Add Course</button>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

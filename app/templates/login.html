@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block title %}Login - EduAnalytics{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+  <section class="auth-panel">
+    <div class="auth-brand">
+      <div class="brand-mark">EA</div>
+      <div>
+        <div class="auth-badge">Education Intelligence</div>
+      </div>
+    </div>
+    <h1>Turn academic signals into earlier action.</h1>
+    <p>
+      Sign in to monitor attendance, review performance trends, and respond faster with a cleaner academic operations workspace.
+    </p>
+    <div class="auth-panel-metrics">
+      <div class="auth-metric">
+        <strong>Performance visibility</strong>
+        <span>See grades, attendance, and risk indicators in one place.</span>
+      </div>
+      <div class="auth-metric">
+        <strong>Role-based access</strong>
+        <span>Students, lecturers, and admins get focused workflows.</span>
+      </div>
+      <div class="auth-metric">
+        <strong>Better intervention</strong>
+        <span>Use clearer data to support students before they slip.</span>
+      </div>
+    </div>
+    <div class="auth-panel-glow" aria-hidden="true"></div>
+  </section>
+
+  <div class="auth-card">
+    <div class="auth-logo">EA</div>
+    <h2>Welcome back</h2>
+    <p class="auth-sub">Sign in to continue using EduAnalytics.</p>
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" name="email" placeholder="you@example.com" required autofocus>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">Login</button>
+    </form>
+    <p class="auth-footer">Need an account? Contact your administrator to create one for you.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Register - EduAnalytics{% endblock %}
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <div class="auth-logo">EA</div>
+    <h2>Account creation is admin-controlled</h2>
+    <p class="auth-sub">Student and lecturer accounts are now created by the administrator for better control and assignment management.</p>
+    <div class="risk-banner risk-low">
+      <strong>What to do next</strong>
+      Ask your admin to create your account, then use your email and password to log in.
+    </div>
+    <div class="btn-row">
+      <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-full">Back to Login</a>
+    </div>
+  </div>
+
+  <section class="auth-panel">
+    <div class="auth-brand">
+      <div class="brand-mark">EA</div>
+      <div>
+        <div class="auth-badge">Academic coordination</div>
+      </div>
+    </div>
+    <h1>Administrators now onboard every student and lecturer.</h1>
+    <p>
+      This keeps user access controlled, course ownership clearer, and academic workflows easier to manage across the system.
+    </p>
+    <div class="auth-panel-metrics">
+      <div class="auth-metric">
+        <strong>Controlled onboarding</strong>
+        <span>Admins can create the right accounts before users enter the system.</span>
+      </div>
+      <div class="auth-metric">
+        <strong>Cleaner access</strong>
+        <span>Lecturers and students receive the right role from the start.</span>
+      </div>
+      <div class="auth-metric">
+        <strong>Better operations</strong>
+        <span>Course assignment and grading workflows stay more organized.</span>
+      </div>
+    </div>
+    <div class="auth-panel-glow" aria-hidden="true"></div>
+  </section>
+</div>
+{% endblock %}

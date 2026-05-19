@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}My Profile - EduAnalytics{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div class="eyebrow">Student Workspace</div>
+  <h1>My Profile</h1>
+  <p>Keep your student information up to date while your matric number stays assigned by the system.</p>
+</div>
+<div class="two-col">
+  <div class="card">
+    <h2>Edit Profile</h2>
+    <form method="POST" action="{{ url_for('student.profile') }}">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" value="{{ current_user.name or '' }}" required>
+      </div>
+      <div class="form-group">
+        <label>Email (read only)</label>
+        <input type="email" value="{{ current_user.email }}" disabled>
+      </div>
+      <div class="form-group">
+        <label>Department</label>
+        <input type="text" name="department" value="{{ profile.department or '' }}" placeholder="e.g. Computer Science">
+      </div>
+      <div class="form-group">
+        <label>Phone Number</label>
+        <input type="text" name="phone" value="{{ profile.phone or '' }}" placeholder="e.g. 08012345678">
+      </div>
+      <div class="form-group">
+        <label>Level</label>
+        <select name="level">
+          {% for lvl in ['100','200','300','400','500'] %}
+          <option value="{{ lvl }}" {% if profile.level == lvl %}selected{% endif %}>{{ lvl }} Level</option>
+          {% endfor %}
+        </select>
+      </div>
+      <hr>
+      <h3>Change Password</h3>
+      <div class="form-group">
+        <label>New Password (leave blank to keep current)</label>
+        <input type="password" name="new_password" placeholder="Enter a new password only if needed">
+      </div>
+      <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Account Info</h2>
+    <div class="info-row"><span class="info-label">Matric Number</span><span>{{ profile.matric_no or 'Pending' }}</span></div>
+    <div class="info-row"><span class="info-label">Name</span><span>{{ current_user.name or '-' }}</span></div>
+    <div class="info-row"><span class="info-label">Email</span><span>{{ current_user.email }}</span></div>
+    <div class="info-row"><span class="info-label">Role</span><span class="badge badge-blue">{{ current_user.role }}</span></div>
+    <div class="info-row"><span class="info-label">Department</span><span>{{ profile.department or '-' }}</span></div>
+    <div class="info-row"><span class="info-label">Level</span><span>{{ profile.level or '-' }}</span></div>
+    <div class="info-row"><span class="info-label">Phone</span><span>{{ profile.phone or '-' }}</span></div>
+    <div class="info-row"><span class="info-label">Member Since</span><span>{{ current_user.created_at.strftime('%d %b %Y') }}</span></div>
+  </div>
+</div>
+{% endblock %}
